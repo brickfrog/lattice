@@ -717,6 +717,22 @@ pub fn render_archive_index(
   custom_css : String,
   data_store : @data.DataStore,
 ) -> Result[String, String] {
+  // Sort groups: newest year/month first (defensive — callers may pass unsorted data)
+  let mut si = 0
+  while si < groups.length() {
+    let mut sj = si + 1
+    while sj < groups.length() {
+      if groups[si].year < groups[sj].year ||
+        (groups[si].year == groups[sj].year && groups[si].month < groups[sj].month) {
+        let tmp = groups[si]
+        groups[si] = groups[sj]
+        groups[sj] = tmp
+      }
+      sj = sj + 1
+    }
+    si = si + 1
+  }
+
   let buf = StringBuilder::new()
   // Group groups by year for the h2 headings
   let mut i = 0
@@ -761,7 +777,13 @@ pub fn render_archive_index(
   slots.set(@template.Title, "Archive")
   slots.set(@template.Content, content)
   slots.set(@template.SiteName, site.title)
-  slots.set(@template.Url, site.base_url + "/" + collection_name + "/archive/")
+  slots.set(
+    @template.Url,
+    absolute_url_builder(
+      site.base_url,
+      "/" + collection_name + "/archive/",
+    ),
+  )
   slots.set(@template.NavLinks, nav_links_html)
   slots.set(@template.CustomCss, custom_css)
   slots.set(@template.Collection, collection_name)
