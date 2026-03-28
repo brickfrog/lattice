@@ -465,6 +465,20 @@ pub fn render_page(meta : PageMeta, body_html : String) -> String {
           "\" />\n"
         None => ""
       }
+      let tw_desc = match meta.description {
+        Some(d) =>
+          "  <meta name=\"twitter:description\" content=\"" +
+          @strutil.escape_html_attr(d) +
+          "\" />\n"
+        None => ""
+      }
+      let tw_img = match meta.og_image {
+        Some(img) =>
+          "  <meta name=\"twitter:image\" content=\"" +
+          @strutil.escape_html_attr(img) +
+          "\" />\n"
+        None => ""
+      }
       "  <link rel=\"canonical\" href=\"" +
       @strutil.escape_html_attr(url) +
       "\" />\n" +
@@ -477,7 +491,13 @@ pub fn render_page(meta : PageMeta, body_html : String) -> String {
       @strutil.escape_html_attr(url) +
       "\" />\n" +
       og_img +
-      feed_tag
+      feed_tag +
+      "  <meta name=\"twitter:card\" content=\"summary_large_image\" />\n" +
+      "  <meta name=\"twitter:title\" content=\"" +
+      @strutil.escape_html_attr(meta.title) +
+      "\" />\n" +
+      tw_desc +
+      tw_img
     }
     None => ""
   }
