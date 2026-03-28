@@ -76,9 +76,10 @@ test "render_page with canonical_url only" {
   // Should NOT contain feed discovery when feed_url is None
   assert_eq(html.contains("alternate.*atom"), false)
   // Should contain Twitter Card tags when canonical_url is Some
+  // Uses "summary" card type when og_image is absent
   assert_eq(
     html.contains(
-      "<meta name=\"twitter:card\" content=\"summary_large_image\" />",
+      "<meta name=\"twitter:card\" content=\"summary\" />",
     ),
     true,
   )
@@ -148,6 +149,13 @@ test "render_page with canonical_url and og_image" {
   assert_eq(
     html.contains(
       "<meta name=\"twitter:image\" content=\"https://example.com/images/og.png\" />",
+    ),
+    true,
+  )
+  // Uses "summary_large_image" card type when og_image is present
+  assert_eq(
+    html.contains(
+      "<meta name=\"twitter:card\" content=\"summary_large_image\" />",
     ),
     true,
   )
