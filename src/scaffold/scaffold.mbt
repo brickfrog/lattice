@@ -1088,30 +1088,27 @@ let welcome_post : String =
   #|
 
 ///|
-/// Generate lattice.conf with inline [[collections]] for the given site name.
+/// Generate lattice.conf with inline [[collections]] for the given target directory.
+/// Collection dir and template paths are relative to content-dir, matching how
+/// the builder resolves them (content_dir + "/" + path when not absolute).
 fn generate_lattice_conf(target_dir : String) -> String {
-  let posts_dir = target_dir + "/content/posts"
-  let template_path = target_dir + "/content/templates/page.html"
+  let content = target_dir + "/content"
   "title = My Site\n" +
     "base_url = http://localhost:4321\n" +
     "description = A new site built with Lattice.\n" +
     "\n" +
     "[[collections]]\n" +
     "name = posts\n" +
-    "dir = " +
-    posts_dir +
-    "\n" +
-    "schema = title:String,date:Date,description:String,tags:Optional[Array[String]],author:String,draft:Optional[Bool]\n" +
-    "template = " +
-    template_path +
-    "\n" +
+    "dir = " + content + "/posts\n" +
+    "schema = title:String,date:Date,description:Optional[String],tags:Optional[Array[String]],author:Optional[String],draft:Optional[Bool]\n" +
+    "template = " + content + "/templates/page.html\n" +
     "page_size = 10\n"
 }
 
 ///|
 /// Default nav data
 let nav_toml : String =
-  #|site_title = "My Site"
+  #|title = "My Site"
   #|links = ["posts"]
   #|
 
@@ -1203,6 +1200,15 @@ pub fn scaffold_site(target_dir : String) -> Result[Unit, String] {
   let posts = content + "/posts"
   let static_dir = content + "/static"
   let data_dir = content + "/data"
+
+  // Fail fast if target already has a lattice.conf to avoid overwriting
+  if @fs.path_exists(content + "/lattice.conf") {
+    return Err(
+      "directory '" +
+      target_dir +
+      "' already contains content/lattice.conf — refusing to overwrite",
+    )
+  }
 
   // Create directories
   match ensure_dir(templates) {
